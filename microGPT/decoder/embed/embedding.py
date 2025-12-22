@@ -21,7 +21,7 @@ def pos_encoding(seq_len, d_model):
     out = out = out.reshape(seq_len, d_model)
     return out
 
-pos_encoding = jax.jit(pos_encoding, static_argnames=('d_model', 'seq_len'))
+# pos_encoding = jax.jit(pos_encoding, static_argnames=('d_model', 'seq_len'))
 
 
 def _embed(params, token_idx):

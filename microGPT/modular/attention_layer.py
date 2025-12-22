@@ -2,15 +2,15 @@ import hax
 import jax.numpy as jnp
 import jax
 
-class AddMm(hax.Module):
-    def call(self, x, w, bias=True):
-        out = jnp.matmul(x, w)
-        if bias:
-            init = hax.initializers.Constant(0.0)
-            b = self.add_param('bias', [out.shape[-1]], init)
-            return out + b
+# class AddMm(hax.Module):
+#     def call(self, x, w, bias=True):
+#         out = jnp.matmul(x, w)
+#         if bias:
+#             init = hax.initializers.Constant(0.0)
+#             b = self.add_param('bias', [out.shape[-1]], init)
+#             return out + b
 
-        else: return out
+#         else: return out
 
 class MhAttention(hax.Module):
     def __init__(self, heads) -> None:
@@ -26,7 +26,7 @@ class MhAttention(hax.Module):
             head_dim = hidden_dim // num_heads
             x = x.reshape(batch, seq_len, num_heads, head_dim)
             return jnp.transpose(x, (0, 2, 1, 3)) 
-
+        
         def merge_heads(x):
             batch, num_heads, seq_len, head_dim = x.shape
             x = jnp.transpose(x, (0, 2, 1, 3))

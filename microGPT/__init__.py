@@ -1,1 +1,1 @@
-from .stack.gpt_micro import micro_gpt_1, micro_gpt_2, micro_gpt_4
+from .stack.gpt_micro import MicroGPT, init_gpt_params
