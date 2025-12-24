@@ -75,9 +75,9 @@ class MicroGPT:
         X: [batch, seq_len]
         """
 
-        x = word_embedding(params["embed"], X)
+        x = word_embedding(params["params"]["embed"], X)
 
-        for block in params["blocks"]:
+        for block in params["params"]["blocks"]:
             x, rng = transformer_block(
                 x,
                 block,
@@ -88,7 +88,7 @@ class MicroGPT:
             )
 
         # Weight tying
-        emb = params["embed"]["embedding_table"]
+        emb = params["params"]["embed"]["embedding_table"]
         logits = jnp.einsum("bsm,vm->bsv", x, emb)
         return logits
 
