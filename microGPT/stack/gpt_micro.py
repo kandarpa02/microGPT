@@ -8,43 +8,30 @@ import jax
 def transformer_block(
     x,
     params,
-    num_heads,
     *,
+    num_heads: int,
     rng=None,
     train=True,
     dropout_rate=0.1,
 ):
-    """
-    Pre-LN Transformer block
-    params:
-      {
-        "ln1": (gamma, beta),
-        "attn": (Wq, Wk, Wv, Wo),
-        "ln2": (gamma, beta),
-        "ffn_fc": (W, b),
-        "ffn_proj": (W, b),
-      }
-    """
-
     # ---- Attention ----
     h = layer_norm(params["ln1"], x)
+
     attn_out = multi_head_attention(
         params["attn"],
         h,
-        num_heads,
+        num_heads=num_heads,   # ✅ static
         causal=True,
     )
-    def dropout(x, rate, rng, train: bool):
-        if not train or rate == 0.0:
-            return x
+
+    def dropout(x, rate, rng):
         keep_prob = 1.0 - rate
         mask = jax.random.bernoulli(rng, keep_prob, x.shape)
         return x * mask / keep_prob
 
-
     if train and dropout_rate > 0.0:
         rng, sub = jax.random.split(rng)
-        attn_out = dropout(attn_out, rate=dropout_rate, rng=sub, train=train)
+        attn_out = dropout(attn_out, dropout_rate, sub)
 
     x = x + attn_out
 
@@ -56,38 +43,31 @@ def transformer_block(
 
     if train and dropout_rate > 0.0:
         rng, sub = jax.random.split(rng)
-        h = dropout(h, rate=dropout_rate, rng=sub, train=train)
+        h = dropout(h, dropout_rate, sub)
 
-    x = x + h
-    return x, rng
-
+    return x + h, rng
 
 class MicroGPT:
-    def __init__(self, vocab, d_model, n_layers, n_heads):
+    def __init__(self, vocab, d_model, n_layers, n_heads, dropout=0.1):
         self.vocab = vocab
         self.d_model = d_model
         self.n_layers = n_layers
-        self.n_heads = n_heads
+        self.n_heads = n_heads          # ✅ static
+        self.dropout = dropout          # ✅ static
 
-    @staticmethod
-    def run_fn(X, params, *, rng=None, train=True):
-        """
-        X: [batch, seq_len]
-        """
-
+    def run_fn(self, X, params, *, rng=None, train=True):
         x = word_embedding(params["params"]["embed"], X)
 
         for block in params["params"]["blocks"]:
             x, rng = transformer_block(
                 x,
                 block,
-                num_heads=params["config"]["n_heads"],
+                num_heads=self.n_heads,     # ✅ Python int
                 rng=rng,
                 train=train,
-                dropout_rate=params["config"]["dropout"],
+                dropout_rate=self.dropout,
             )
 
-        # Weight tying
         emb = params["params"]["embed"]["embedding_table"]
         logits = jnp.einsum("bsm,vm->bsv", x, emb)
         return logits
@@ -99,21 +79,14 @@ def init_gpt_params(
     d_model,
     n_layers,
     n_heads,
-    dropout=0.1,
 ):
     keys = jax.random.split(rng, n_layers + 1)
 
     params = {
-        "config": {
-            "n_heads": n_heads,
-            "dropout": dropout,
-            "pre_ln": True,
-            "tie_embeddings": True,
-        },
-        "params":{
-        "embed": init_embedding_params(42, vocab, d_model),
-        "blocks": [],
-    }
+        "params": {
+            "embed": init_embedding_params(42, vocab, d_model),
+            "blocks": [],
+        }
     }
 
     for i in range(n_layers):
