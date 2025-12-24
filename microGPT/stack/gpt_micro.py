@@ -110,12 +110,14 @@ def init_gpt_params(
             "pre_ln": True,
             "tie_embeddings": True,
         },
+        "params":{
         "embed": init_embedding_params(42, vocab, d_model),
         "blocks": [],
     }
+    }
 
     for i in range(n_layers):
-        params["blocks"].append({
+        params["params"]["blocks"].append({
             "ln1": init_layer_norm_params(d_model),
             "attn": init_attention_param(d_model),
             "ln2": init_layer_norm_params(d_model),
