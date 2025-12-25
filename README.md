@@ -53,6 +53,7 @@ prompt = "Once upon a time"
 text = generate_text(
     rng=rng,
     text=prompt,
+    max_new_tokens=200
 )
 
 print(f"Result: {text}")
