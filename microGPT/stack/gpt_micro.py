@@ -14,7 +14,7 @@ def transformer_block(
     train=True,
     dropout_rate=0.1,
 ):
-    # ---- Attention ----
+    
     h = layer_norm(params["ln1"], x)
 
     attn_out = multi_head_attention(
@@ -78,7 +78,6 @@ def init_gpt_params(
     vocab,
     d_model,
     n_layers,
-    n_heads,
 ):
     keys = jax.random.split(rng, n_layers + 1)
 

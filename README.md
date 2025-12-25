@@ -19,9 +19,11 @@ Core components like **Self-Attention**, **Embeddings**, **LayerNorm**, and **Fe
 git clone https://github.com/kandarpa02/microGPT.git
 cd microGPT
 pip install .
+pip install -r requirements.txt
 ```
 
 ## Inference
+I added a simple generate function for inference, just import it and all weights and tokenizers will be downloaded automatically!
 
 ```python
 from microGPT.infer import generate_text

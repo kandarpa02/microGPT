@@ -1,4 +1,6 @@
 jax
-jaxlib
 optax
 pytest
+gdown
+pickle
+sentencepiece
